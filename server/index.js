@@ -1,21 +1,32 @@
-const express = require("express");
+require("dotenv").config();
+const express  = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+const cors     = require("cors");
+const path     = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/students", require("./routes/students"));
-app.use("/attendance", require("./routes/attendance"));
+// API Routes
+app.use("/students",    require("./routes/students"));
+app.use("/attendance",  require("./routes/attendance"));
 app.use("/assignments", require("./routes/assignments"));
-app.use("/notes", require("./routes/notes"));
+app.use("/notes",       require("./routes/notes"));
 
-// Health check
-app.get("/", (req, res) => res.json({ status: "Discipleship API running" }));
+// Serve React build in production
+if (process.env.NODE_ENV === "production") {
+  const buildPath = path.join(__dirname, "../client/build");
+  app.use(express.static(buildPath));
+  // Any non-API route serves the React app
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => res.json({ status: "Discipleship API running" }));
+}
 
-const PORT = process.env.PORT || 5001;
+const PORT      = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/discipleship";
 
 mongoose
