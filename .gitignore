@@ -1,7 +1,10 @@
 node_modules/
-client/node_modules/
-server/node_modules/
-client/build/
+dist/
+backend/.env
 .env
-*.log
+*.tgz
+*.zip
 .DS_Store
+.codex/
+frontend/.env.local
+frontend/.env.production

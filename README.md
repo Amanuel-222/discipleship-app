@@ -1,146 +1,119 @@
-# Discipleship Class Manager
+# TVM Discipleship — React + Supabase
 
-A clean, mobile-friendly web app for managing a discipleship class —
-attendance, assignments, and student progress notes.
+A small class-management app for True Vine Ministry: student profiles, weekly attendance, assignment submission statuses, dated progress notes, dashboard metrics, and CSV exports.
 
----
+React runs the interface. Supabase provides PostgreSQL, authentication, a REST API, and Row Level Security (RLS). Render serves the frontend as a static site. There is no Express server or MongoDB service to maintain in this version.
 
-## Folder Structure
+## Status
 
-```
-discipleship-app/
-├── server/                    # Express + MongoDB backend
-│   ├── index.js               # Entry point
-│   ├── seed.js                # Sample data loader
-│   ├── models/
-│   │   ├── Student.js
-│   │   ├── Attendance.js
-│   │   ├── Assignment.js
-│   │   └── Note.js
-│   └── routes/
-│       ├── students.js        # GET/POST/PUT/DELETE + dashboard stats
-│       ├── attendance.js      # Sessions + per-student toggle
-│       ├── assignments.js     # Assignments + submission toggle
-│       └── notes.js           # Progress notes per student
-│
-└── client/                    # React frontend
-    ├── public/index.html
-    └── src/
-        ├── App.js             # Router + sidebar nav
-        ├── index.css          # All styles (design tokens, components)
-        ├── utils/
-        │   ├── api.js         # All API calls in one place
-        │   └── toast.js       # Notification context
-        └── pages/
-            ├── Dashboard.js   # Stats + student progress table
-            ├── Students.js    # Add/edit/delete students
-            ├── StudentDetail.js  # Individual student + progress notes
-            ├── Attendance.js  # Weekly sessions + present/absent toggles
-            └── Assignments.js # Assignments + submitted/pending toggles
-```
+The Supabase integration and SQL setup are prepared and tested locally. A live Supabase project must still be selected/configured and the static frontend deployed before this becomes a shared app. Installing the Supabase connection in ChatGPT does not by itself connect the deployed frontend.
 
----
+The existing Sites preview remains a fictional sample-data preview until a live project is configured. Browser sample data is not automatically migrated into Supabase.
 
-## Prerequisites
+## Owner setup
 
-- **Node.js** 18 or newer — https://nodejs.org
-- **MongoDB Community** — https://www.mongodb.com/try/download/community
+1. Use a **new, dedicated Supabase project** on the Free plan. The schema uses common table names and is intended for a new project, not an unrelated existing app.
+2. Run `supabase/schema.sql` in that project's SQL Editor. It creates the tables, roster triggers, and approved-team policies. The SQL is transactional and will fail if these tables already exist; do not rerun it against an existing class without reviewing a migration.
+3. In Authentication settings, enable email/password sign-in and disable public sign-up.
+4. Create your own application user under Authentication → Users using the email/password you want to use in the TVM app. Your Supabase dashboard account is separate and is not automatically an application user.
+5. Run `supabase/approve-member.sql`, replacing both example-email occurrences with that user's exact email. Verify the result shows the approved email. This sends no invitation email.
+6. For each teammate, create an application user and approve it the same way. Share their login credentials privately. Teammates do not need ChatGPT, Render, or Supabase dashboard accounts.
+7. For password resets, use the project owner's user-management workflow. This MVP has no public sign-up, email-invitation flow, or self-service password-reset screen.
+8. Get the project URL and **publishable key** from the project's Connect panel/API settings. A legacy `anon` key also works. Never use a `service_role` key or `sb_secret_...` key in the React frontend.
 
-### Install MongoDB on Mac (easiest via Homebrew)
+## Run locally on your Mac
+
+Install Node.js 22–24. In the project directory:
 
 ```bash
-brew tap mongodb/brew
-brew install mongodb-community
-```
-
----
-
-## Running Locally
-
-### 1. Start MongoDB
-
-```bash
-brew services start mongodb-community
-```
-
-Check it's running:
-```bash
-mongosh --eval "db.runCommand({ ping: 1 })"
-# Should print: { ok: 1 }
-```
-
-### 2. Set up the server
-
-```bash
-cd discipleship-app/server
 npm install
+cp frontend/.env.local.example frontend/.env.local
 ```
 
-Optional — create a `.env` file (defaults work without it):
-```bash
-echo "PORT=5000\nMONGO_URI=mongodb://127.0.0.1:27017/discipleship" > .env
+Edit `frontend/.env.local`:
+
+```dotenv
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 ```
 
-Load sample data (5 students, 4 sessions, 3 assignments, 7 notes):
-```bash
-npm run seed
-```
+Then:
 
-Start the server:
 ```bash
 npm run dev
-# Server running on http://localhost:5000
 ```
 
-### 3. Set up the client (new terminal tab)
+Open `http://127.0.0.1:5173`. Sign in with an approved **application user**, not your Supabase dashboard login. Restart Vite after changing environment values.
+
+For a local production-build check:
 
 ```bash
-cd discipleship-app/client
-npm install
-npm start
-# Opens http://localhost:3000
+npm run build
+npm run preview
 ```
 
----
+## Host outside ChatGPT
 
-## API Endpoints
+See `HOST_ON_RENDER.md`. `render.yaml` now defines a static site, so there is no backend server to deploy. Set the two Supabase environment values before building. Everyone opens the same normal HTTPS website and signs in with their own approved email/password.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/students` | All students |
-| POST | `/students` | Create student |
-| PUT | `/students/:id` | Update student |
-| DELETE | `/students/:id` | Delete student + their data |
-| GET | `/students/dashboard/stats` | Dashboard summary |
-| GET | `/attendance` | All sessions |
-| POST | `/attendance` | Create session |
-| PATCH | `/attendance/:sessionId/record/:studentId` | Toggle present/absent |
-| DELETE | `/attendance/:id` | Delete session |
-| GET | `/assignments` | All assignments |
-| POST | `/assignments` | Create assignment |
-| PATCH | `/assignments/:assignmentId/submission/:studentId` | Toggle submitted |
-| DELETE | `/assignments/:id` | Delete assignment |
-| GET | `/notes/student/:studentId` | Notes for a student |
-| POST | `/notes` | Add a note |
-| DELETE | `/notes/:id` | Delete a note |
+## Sample data
 
----
+- `frontend/src/sample.js`: fictional data used only in the explicitly labeled preview.
+- `supabase/sample-data.sql`: optional fictional data for an **empty test project**. It refuses a nonempty class database. Do not run it for a real class.
 
-## Sample Data (loaded by `npm run seed`)
+A sample frontend build without a Supabase connection:
 
-**Students:** James Okonkwo, Miriam Tadesse, David Park, Esther Nguyen, Samuel Osei
+```bash
+VITE_DEMO=true npm run build
+```
 
-**Sessions:** 4 weekly sessions (Week 1–4) with varied attendance
+For a live build, leave `VITE_DEMO` unset or set it to `false`. Configured Supabase values take precedence over demo mode. A non-demo build with missing configuration shows a setup message instead of pretending to save real data.
 
-**Assignments:** 3 assignments with partial submissions
+## Folder structure
 
-**Notes:** 7 progress notes across students
+```text
+tvm-discipleship/
+  package.json / package-lock.json
+  render.yaml
+  README.md / HOST_ON_RENDER.md
+  frontend/
+    .env.local.example
+    index.html / vite.config.js
+    src/
+      main.jsx          Screens, forms, profiles, individual login
+      styles.css        Responsive UI
+      supabase.js       Supabase client, login, team access check
+      api.js            Data adapter and explicit sample-mode adapter
+      metrics.js        Attendance/completion calculations and CSV
+      sample.js         Fictional browser preview data
+  supabase/
+    schema.sql          Tables, triggers, RLS, optional live updates
+    approve-member.sql  Owner-controlled access approval/revocation
+    sample-data.sql     Optional fictional test data
+  tests/
+    metrics.test.js
+```
 
----
+## Access and data rules
 
-## Tips
+- All approved team members can read and edit this one class. No separate admin/member roles inside the app.
+- Approval is maintained in `team_members` by the project owner. Application users cannot grant themselves membership.
+- Anonymous users and logged-in but unapproved users cannot read class data. RLS protects every business table.
+- Sessions and assignments capture the current student roster atomically. Later students appear in future rosters only.
+- Attendance starts unmarked. Percentage = Present / (Present + Absent); unmarked sessions are excluded.
+- Assignment completion = submitted / assigned roster records. This tracks submission status, not uploaded files.
+- Notes receive database timestamps by default. The browser displays local time.
+- Deleting a student cascades to their attendance, submissions, and notes.
+- Live changes refresh the interface when Supabase Realtime is enabled. Returning focus to the app also reloads shared data.
+- Export CSV backups regularly. The Free plan has limits, inactivity pausing, and no automatic database backups included.
 
-- **Mobile use during class:** The sidebar collapses to a hamburger menu on small screens. Attendance toggles are large enough for thumb taps.
-- **Attendance flow:** Create a session → toggles auto-populate with all current students as Absent → tap to mark Present.
-- **New student:** Adding a student automatically adds them to all existing sessions and assignments as absent/pending.
-- **Progress notes:** On any student's detail page, use ⌘+Enter to quickly save a note.
+## Verification
+
+```bash
+npm test
+npm run build
+```
+
+Local PostgreSQL tests verified schema constraints, atomic roster capture, status updates, note timestamps, cascading deletion, anonymous/outsider denial, prevention of self-approval, and access revocation. Browser checks cover the sample workflows and Supabase login/data integration using a controlled test API. Live authentication, RLS, and multi-device persistence still need verification against your configured Supabase project before launch.
+
+The previous Express/MongoDB implementation remains in the Git tag `express-mongo-mvp` and in the earlier source archive.

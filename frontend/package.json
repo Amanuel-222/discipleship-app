@@ -1,0 +1,19 @@
+{
+  "name": "tvm-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build --outDir ../dist --emptyOutDir",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "@supabase/supabase-js": "2.117.2"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0"
+  }
+}
