@@ -33,7 +33,7 @@ The Render static site has a free tier subject to bandwidth/build quotas. Supaba
 3. Sign in as an approved user, create a student, and verify it appears after reopening the app and on a second device.
 4. Mark attendance and an assignment; add a note; verify metrics and CSV output.
 5. Verify team changes arrive on another signed-in browser (or after refocusing it).
-6. Share the app link and provisioned credentials privately with approved team members.
+6. Configure Supabase Site URL, the password-setup redirect allowlist, and custom SMTP (see README). Send invitations to approved team members; verify a real invitation and reset email reach the intended inbox and return to the app. Teammates choose their own passwords.
 
 No ChatGPT/Supabase dashboard/Render accounts are required for your teammates. Project owners still need their hosting-provider accounts for administration.
 

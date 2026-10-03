@@ -11,3 +11,4 @@
 @media(max-width:640px){nav a{font-size:8px;min-width:0}nav a span{max-width:100%;text-align:center}.meeting-list{padding:0 18px}.meeting-entry{padding:20px 0}.meeting-heading h3{font-size:15px}.meeting-entry>p{font-size:12px}.meeting-entry>small{font-size:9px}}
 
 .mobile-nav-label{display:none}@media(max-width:640px){.desktop-nav-label{display:none}.mobile-nav-label{display:block;white-space:nowrap}}
+.auth-switch{margin:17px 0 5px;min-height:36px}.auth-message{font-size:12px;line-height:1.8;padding:12px;background:#eef5e6;color:#536749;border-radius:6px;margin-bottom:15px}.login-card .form-error{margin-bottom:15px}.login-card>p{overflow-wrap:anywhere}

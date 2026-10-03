@@ -4,11 +4,9 @@ A small class-management app for True Vine Ministry: student profiles, weekly at
 
 React runs the interface. Supabase provides PostgreSQL, authentication, a REST API, and Row Level Security (RLS). Render serves the frontend as a static site. There is no Express server or MongoDB service to maintain in this version.
 
-## Status
+## Live app
 
-The Supabase integration and SQL setup are prepared and tested locally. A live Supabase project must still be selected/configured and the static frontend deployed before this becomes a shared app. Installing the Supabase connection in ChatGPT does not by itself connect the deployed frontend.
-
-The existing Sites preview remains a fictional sample-data preview until a live project is configured. Browser sample data is not automatically migrated into Supabase.
+The TVM app is deployed at https://tvm-discipleship.onrender.com/ from the `tvm-supabase` GitHub branch. The old `main` branch and app remain separate. Teammates use their own approved application accounts.
 
 ## Owner setup
 
@@ -17,8 +15,8 @@ The existing Sites preview remains a fictional sample-data preview until a live 
 3. In Authentication settings, enable email/password sign-in and disable public sign-up.
 4. Create your own application user under Authentication → Users using the email/password you want to use in the TVM app. Your Supabase dashboard account is separate and is not automatically an application user.
 5. Run `supabase/approve-member.sql`, replacing both example-email occurrences with that user's exact email. Verify the result shows the approved email. This sends no invitation email.
-6. For each teammate, create an application user and approve it the same way. Share their login credentials privately. Teammates do not need ChatGPT, Render, or Supabase dashboard accounts.
-7. For password resets, use the project owner's user-management workflow. This MVP has no public sign-up, email-invitation flow, or self-service password-reset screen.
+6. Configure invitation emails and auth redirects as described below. Invite each teammate under Authentication → Users → Add user → Invite user, then approve their exact email using `supabase/approve-member.sql`. They choose their own password from the invitation link. Teammates do not need ChatGPT, Render, or Supabase dashboard accounts.
+7. Existing application users can use **Forgot password?** on the app's sign-in page. Public sign-up remains disabled.
 8. Get the project URL and **publishable key** from the project's Connect panel/API settings. A legacy `anon` key also works. Never use a `service_role` key or `sb_secret_...` key in the React frontend.
 
 ## Run locally on your Mac
@@ -114,7 +112,7 @@ npm test
 npm run build
 ```
 
-Local PostgreSQL tests verified schema constraints, atomic roster capture, status updates, note timestamps, cascading deletion, anonymous/outsider denial, prevention of self-approval, and access revocation. Browser checks cover the sample workflows and Supabase login/data integration using a controlled test API. Live authentication, RLS, and multi-device persistence still need verification against your configured Supabase project before launch.
+Local PostgreSQL tests verified schema constraints, atomic roster capture, status updates, note timestamps, cascading deletion, anonymous/outsider denial, prevention of self-approval, and access revocation. Browser checks cover the sample workflows and Supabase login/data integration using a controlled test API. The owner has verified live login. Invitation and reset delivery additionally require the SMTP configuration below. Controlled browser checks verify invitation/recovery link handling, password confirmation, password update, and membership denial; they do not send real email.
 
 The previous Express/MongoDB implementation remains in the Git tag `express-mongo-mvp` and in the earlier source archive.
 
@@ -123,3 +121,15 @@ The previous Express/MongoDB implementation remains in the Git tag `express-mong
 Open **Team meetings** to save a title, meeting date, and notes for each meeting. Approved teammates can view, edit, or delete these shared entries. Line breaks are preserved, and the meeting history can be exported as CSV. Each record also stores its creation timestamp.
 
 New projects use `supabase/schema.sql`, which includes meeting notes. To upgrade an existing TVM database, apply `supabase/team-meetings.sql` once before deploying the updated frontend. Do not re-run the full schema on an existing project.
+
+## Invitation and password-reset setup
+
+1. In Supabase Authentication → URL Configuration, set **Site URL** to `https://tvm-discipleship.onrender.com/`. Add the exact redirect URL `https://tvm-discipleship.onrender.com/?auth=setup` to the redirect allowlist. If testing locally, separately allow `http://127.0.0.1:5173/?auth=setup`.
+2. Configure **custom SMTP** under Authentication → Emails → SMTP Settings, using an email provider's sender address, host, port, username, and password. Keep all credentials in Supabase settings. The built-in service only sends to Supabase organization team addresses; adding classmates as app users does not make them eligible. Do not add classmates as Supabase organization administrators to work around this restriction.
+3. Use Authentication → Users → Add user → **Invite user** for new teammates. This sends an email and creates their app account without you assigning their password. For an existing app user, use the site's **Forgot password?** flow instead.
+4. Approve the invited user's exact email with `supabase/approve-member.sql`. Sending an invitation alone does not grant access to class records.
+5. The teammate opens the link, enters and confirms their new password (at least 8 characters), then signs in normally. Supabase stores the credentials. Expired links show a clear recovery message; request a fresh invitation/reset link.
+
+Keep the default invite/recovery templates' `{{ .ConfirmationURL }}` links, which verify the email before returning to this app. No service-role key or admin invitation API is exposed in the browser. Invitations are sent by the project owner through Supabase, not by ordinary class members.
+
+Reference: https://supabase.com/docs/guides/auth/auth-smtp
