@@ -3,12 +3,13 @@ import {supabase,configured} from './supabase.js';
 export const demoDefault=import.meta.env.VITE_DEMO==='true';
 export function isDemo(){return demoDefault&&!configured;}
 const key='tvm-demo-v1';
-export function readDemo(){try{const x=JSON.parse(localStorage.getItem(key));if(x?.students&&x?.attendance&&x?.assignments&&x?.notes)return x;}catch{}const x=sampleData();localStorage.setItem(key,JSON.stringify(x));return x;}
+export function readDemo(){try{const x=JSON.parse(localStorage.getItem(key));if(x?.students&&x?.attendance&&x?.assignments&&x?.notes)return {...x,meetings:x.meetings||[]};}catch{}const x=sampleData();localStorage.setItem(key,JSON.stringify(x));return x;}
 const configs={
  students:{table:'students',select:'id,name,email,notes,created_at'},
  attendance:{table:'sessions',select:'id,date,created_at,records:attendance_records(student:student_id,status)'},
  assignments:{table:'assignments',select:'id,title,description,due_date,created_at,records:assignment_submissions(student:student_id,submitted)'},
- notes:{table:'progress_notes',select:'id,student:student_id,text,created_at'}
+ notes:{table:'progress_notes',select:'id,student:student_id,text,created_at'},
+ meetings:{table:'team_meetings',select:'id,title,date,notes,created_at'}
 };
 function normalize(row){const {id,created_at,due_date,...rest}=row;return {...rest,_id:id,createdAt:created_at,...(due_date!==undefined?{dueDate:due_date||''}:{})};}
 function checked(result,resource){if(result.error){const err=result.error;if(err.code==='23505'&&resource==='attendance')throw new Error('A session already exists on that date.');if(err.code==='42501')throw new Error('Your account does not have permission to change this class.');if(err.code==='PGRST116')throw new Error('This record no longer exists or you do not have access.');throw new Error(err.message||'Could not save. Please try again.');}return result.data;}
@@ -21,12 +22,14 @@ export async function request(resource,method='GET',body){
   let values;if(collection==='students')values={name:body.name.trim(),email:body.email?.trim()||'',notes:body.notes||''};
   if(collection==='attendance')values={date:body.date};
   if(collection==='assignments')values={title:body.title.trim(),description:body.description||'',due_date:body.dueDate||null};
+  if(collection==='meetings')values={title:body.title.trim(),date:body.date,notes:body.notes.trim()};
   if(collection==='notes')values={student_id:body.student,text:body.text.trim()};
   return normalize(checked(await supabase.from(c.table).insert(values).select(c.select).single(),collection));
  }
  if(method==='PATCH'){
   if(collection==='attendance'){checked(await supabase.from('attendance_records').update({status:body.status}).eq('session_id',rowId).eq('student_id',body.student).select('session_id').single(),collection);return null;}
   if(collection==='assignments'){checked(await supabase.from('assignment_submissions').update({submitted:body.submitted}).eq('assignment_id',rowId).eq('student_id',body.student).select('assignment_id').single(),collection);return null;}
+  if(collection==='meetings')return normalize(checked(await supabase.from(c.table).update({title:body.title.trim(),date:body.date,notes:body.notes.trim()}).eq('id',rowId).select(c.select).single(),collection));
   return normalize(checked(await supabase.from(c.table).update({name:body.name.trim(),email:body.email?.trim()||'',notes:body.notes||''}).eq('id',rowId).select(c.select).single(),collection));
  }
  if(method==='DELETE'){checked(await supabase.from(c.table).delete().eq('id',rowId).select('id').single(),collection);return null;}

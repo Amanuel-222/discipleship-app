@@ -73,6 +73,14 @@ create table public.progress_notes (
 );
 create index notes_student_idx on public.progress_notes(student_id);
 
+create table public.team_meetings (
+  id uuid primary key default gen_random_uuid(),
+  title text not null check (length(trim(title)) between 1 and 160),
+  date date not null,
+  notes text not null check (length(trim(notes)) between 1 and 10000),
+  created_at timestamptz not null default now()
+);
+
 -- Roster capture is atomic with session/assignment creation. Later students
 -- do not inherit absences or assignments from before they joined the class.
 create function tvm_private.capture_session_roster()
@@ -105,7 +113,7 @@ create policy "Members can see their own approval" on public.team_members
 for select to authenticated using (user_id = (select auth.uid()));
 
 do $$ declare t text; begin
-  foreach t in array array['students','sessions','attendance_records','assignments','assignment_submissions','progress_notes'] loop
+  foreach t in array array['students','sessions','attendance_records','assignments','assignment_submissions','progress_notes','team_meetings'] loop
     execute format('alter table public.%I enable row level security',t);
     execute format('revoke all on public.%I from anon, authenticated',t);
     execute format('grant select, insert, update, delete on public.%I to authenticated',t);
@@ -122,7 +130,7 @@ grant update(submitted) on public.assignment_submissions to authenticated;
 -- Optional live updates. This publication exists on Supabase projects.
 do $$ declare t text; begin
   if exists (select 1 from pg_publication where pubname='supabase_realtime') then
-    foreach t in array array['students','sessions','attendance_records','assignments','assignment_submissions','progress_notes'] loop
+    foreach t in array array['students','sessions','attendance_records','assignments','assignment_submissions','progress_notes','team_meetings'] loop
       if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename=t) then
         execute format('alter publication supabase_realtime add table public.%I',t);
       end if;

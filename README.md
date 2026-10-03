@@ -117,3 +117,9 @@ npm run build
 Local PostgreSQL tests verified schema constraints, atomic roster capture, status updates, note timestamps, cascading deletion, anonymous/outsider denial, prevention of self-approval, and access revocation. Browser checks cover the sample workflows and Supabase login/data integration using a controlled test API. Live authentication, RLS, and multi-device persistence still need verification against your configured Supabase project before launch.
 
 The previous Express/MongoDB implementation remains in the Git tag `express-mongo-mvp` and in the earlier source archive.
+
+## Team meeting notes
+
+Open **Team meetings** to save a title, meeting date, and notes for each meeting. Approved teammates can view, edit, or delete these shared entries. Line breaks are preserved, and the meeting history can be exported as CSV. Each record also stores its creation timestamp.
+
+New projects use `supabase/schema.sql`, which includes meeting notes. To upgrade an existing TVM database, apply `supabase/team-meetings.sql` once before deploying the updated frontend. Do not re-run the full schema on an existing project.
