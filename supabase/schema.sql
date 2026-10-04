@@ -71,7 +71,7 @@ create table public.sessions (
 create table public.attendance_records (
   session_id uuid not null references public.sessions(id) on delete cascade,
   student_id uuid not null references public.students(id) on delete cascade,
-  status text check (status in ('Present','Late','Absent')),
+  status text check (status in ('Present','Late','Absent','Excused','Unexcused')),
   primary key (session_id,student_id)
 );
 create index attendance_student_idx on public.attendance_records(student_id);

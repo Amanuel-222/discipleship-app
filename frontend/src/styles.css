@@ -18,3 +18,5 @@
 .classroom-controls{display:flex;flex-direction:column;gap:14px;margin-top:18px}.classroom-controls .primary{align-self:flex-start}.classroom-error{color:#9b322d}.classroom-controls select{max-width:100%}
 
 .segmented .late.selected,.submission.late{background:#fff2d4;color:#89651e;border-color:#e8d19d}.assignment-summary{padding:14px 23px;color:#737c6a;border-bottom:1px solid var(--border)}select.submission{cursor:pointer;max-width:160px}@media(max-width:600px){.attendance-row{flex-wrap:wrap}.attendance-controls{margin-left:auto}.assignment-summary{padding:14px 18px}}
+
+.attendance-status{border:1px solid var(--border);border-radius:6px;padding:9px;max-width:215px;background:#fafbf7}.attendance-status.present{background:#eef5e6;color:#506646}.attendance-status.late{background:#fff2d4;color:#89651e}.attendance-status.excused,.badge.excused{background:#e8f0fa;color:#48657e}.attendance-status.unexcused,.badge.unexcused{background:#f7e8e5;color:#9a5149}@media(max-width:600px){.attendance-status{max-width:190px;font-size:12px}}

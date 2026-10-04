@@ -1,4 +1,11 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {studentMetrics} from '../frontend/src/metrics.js';
+test('Excused absences are excluded while unexcused and unknown absences count as missed',()=>{
+ const data={attendance:['Present','Late','Excused','Unexcused','Absent',null].map(status=>({records:[{student:'s1',status}]})),assignments:[]};
+ const result=studentMetrics({_id:'s1'},data);
+ assert.equal(result.attendance,50);assert.equal(result.sessions,4);
+ data.attendance=[{records:[{student:'s1',status:'Excused'}]}];
+ assert.equal(studentMetrics({_id:'s1'},data).attendance,null);
+});
 test('Late attendance counts as attended and late submitted work counts as completed',()=>{
  const data={attendance:['Present','Late','Absent',null].map(status=>({records:[{student:'s1',status}]})),assignments:[{records:[{student:'s1',submitted:true,late:true},{student:'s1',submitted:false,late:false}]}]};
  assert.equal(studentMetrics({_id:'s1'},data).attendance,67);

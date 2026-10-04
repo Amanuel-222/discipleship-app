@@ -167,3 +167,5 @@ The sync reads every page of students, topics, published coursework, and submiss
 Attendance supports Present, Late, and Absent. Late attendance counts as attended. Manual assignments support Not submitted, Submitted, and Late; Late means submitted late and counts toward completion. Imported assignments use Classroom's late flag on submitted work, refreshed by Sync Classroom. Unsubmitted overdue work remains Not submitted.
 
 For an existing database, apply `supabase/late-status.sql` after the Classroom exclusions upgrade. Fresh installations use the updated `schema.sql` and `classroom.sql`.
+
+Attendance also distinguishes E (Excused absence) from U (Unexcused absence), including student histories and CSV exports. Excused absences are excluded from attendance percentages. Legacy Absent records retain an unknown reason until clarified. Existing projects apply `supabase/absence-reasons.sql` after `late-status.sql`.
