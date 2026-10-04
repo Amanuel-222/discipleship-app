@@ -1,12 +1,10 @@
--- After creating a user in Authentication > Users, run this in the SQL Editor.
--- Replace the email with the exact account to approve; this sends no email.
-insert into public.team_members (user_id)
-select id from auth.users where lower(email) = lower('replace-with-team-member@example.com')
-on conflict (user_id) do nothing;
--- Verify ONE matching account was approved:
-select u.email from public.team_members m join auth.users u on u.id=m.user_id
-where lower(u.email) = lower('replace-with-team-member@example.com');
-
--- To revoke access later (replace the email and uncomment):
--- delete from public.team_members where user_id in
--- (select id from auth.users where lower(email)=lower('replace-with-team-member@example.com'));
+-- Owner-controlled approval for one class. Invite the email first in Supabase.
+-- Replace the email and class slug (discipleship, foundations, ministry-empowerment).
+insert into public.ministry_members(ministry_id,user_id,role)
+select m.id,u.id,'member' from public.ministries m cross join auth.users u
+where m.slug='discipleship' and lower(u.email)=lower('replace-with-team-member@example.com')
+on conflict(ministry_id,user_id) do nothing;
+select u.email,m.name,mm.role from public.ministry_members mm
+join public.ministries m on m.id=mm.ministry_id join auth.users u on u.id=mm.user_id
+where m.slug='discipleship' and lower(u.email)=lower('replace-with-team-member@example.com');
+-- Existing church admins/class leaders can also use Team & settings in the app.

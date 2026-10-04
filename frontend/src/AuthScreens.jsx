@@ -24,7 +24,7 @@ export function Login({onLogin,initialError='',notice=''}){
    }else{await signIn(email.trim(),password);onLogin();}
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
- return <AuthCard title={reset?'Reset your password.':'Growing together.'} description={reset?'Enter the email you use for your TVM class.':'Sign in to your TVM discipleship class.'}>
+ return <AuthCard title={reset?'Reset your password.':'Growing together.'} description={reset?'Enter the email you use for your True Vine class.':'Sign in to your True Vine class.'}>
   {configured?<>
    <form onSubmit={submit}>
     <Field label="Email" name="email" type="email" autoComplete="username" required autoFocus/>

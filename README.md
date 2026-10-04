@@ -1,6 +1,6 @@
-# TVM Discipleship — React + Supabase
+# True Vine Classes — React + Supabase
 
-A small class-management app for True Vine Ministry: student profiles, weekly attendance, assignment submission statuses, dated progress notes, dashboard metrics, and CSV exports.
+A simple student tracker for Discipleship, Foundations, and Ministry Empowerment: student profiles, weekly attendance, assignment submission statuses, dated progress notes, dashboard metrics, and CSV exports.
 
 React runs the interface. Supabase provides PostgreSQL, authentication, a REST API, and Row Level Security (RLS). Render serves the frontend as a static site. There is no Express server or MongoDB service to maintain in this version.
 
@@ -11,7 +11,7 @@ The TVM app is deployed at https://tvm-discipleship.onrender.com/ from the `tvm-
 ## Owner setup
 
 1. Use a **new, dedicated Supabase project** on the Free plan. The schema uses common table names and is intended for a new project, not an unrelated existing app.
-2. Run `supabase/schema.sql` in that project's SQL Editor. It creates the tables, roster triggers, and approved-team policies. The SQL is transactional and will fail if these tables already exist; do not rerun it against an existing class without reviewing a migration.
+2. Run `supabase/schema.sql`, then `supabase/church-classes.sql` in that project's SQL Editor. It creates the tables, roster triggers, and approved-team policies. The SQL is transactional and will fail if these tables already exist; do not rerun it against an existing class without reviewing a migration.
 3. In Authentication settings, enable email/password sign-in and disable public sign-up.
 4. Create your own application user under Authentication → Users using the email/password you want to use in the TVM app. Your Supabase dashboard account is separate and is not automatically an application user.
 5. Run `supabase/approve-member.sql`, replacing both example-email occurrences with that user's exact email. Verify the result shows the approved email. This sends no invitation email.
@@ -52,7 +52,7 @@ npm run preview
 
 ## Host outside ChatGPT
 
-See `HOST_ON_RENDER.md`. `render.yaml` now defines a static site, so there is no backend server to deploy. Set the two Supabase environment values before building. Everyone opens the same normal HTTPS website and signs in with their own approved email/password.
+See `HOST_ON_RENDER.md`. `render.yaml` now defines a static site, so there is no backend server to deploy. Set the two Supabase environment values before building. Everyone opens the same HTTPS website and signs in with their own email/password; their assigned classes control which records they can access.
 
 ## Sample data
 
@@ -94,8 +94,8 @@ tvm-discipleship/
 
 ## Access and data rules
 
-- All approved team members can read and edit this one class. No separate admin/member roles inside the app.
-- Approval is maintained in `team_members` by the project owner. Application users cannot grant themselves membership.
+- Church administrators can access all classes. Class leaders and team members can read/edit records only in their assigned classes. Leaders manage members for their class; only church administrators appoint class leaders.
+- Approval is maintained in `ministry_members`, with church-wide administrator access in `church_admins`. Guarded membership RPCs enforce leader/admin permissions; ordinary members cannot grant access. `team_members` remains only as migration history and no longer authorizes access.
 - Anonymous users and logged-in but unapproved users cannot read class data. RLS protects every business table.
 - Sessions and assignments capture the current student roster atomically. Later students appear in future rosters only.
 - Attendance starts unmarked. Percentage = Present / (Present + Absent); unmarked sessions are excluded.
@@ -136,6 +136,21 @@ Reference: https://supabase.com/docs/guides/auth/auth-smtp
 
 ## Team directory
 
-Open **Team & settings** (on mobile, tap **TV** in the top-right corner) to see the **Team members** directory. It lists approved teammates' email addresses and approval dates, marks your own account, and refreshes on demand or when you return to the app. Invited accounts appear after class-access approval, even before their first sign-in.
+Open **Team & settings** (on mobile, tap **TV** in the top-right corner) to see the **Team members** directory. It lists the selected class’s teammates' email addresses, class roles, and approval dates, marks your own account, and refreshes on demand or when you return to the app. Invited accounts appear after class-access approval, even before their first sign-in.
 
 For an existing database, apply `supabase/team-directory.sql` once before deploying this update. New projects use the full schema. A caller-checked private function returns only email, user ID, and approval date; anonymous and unapproved accounts cannot retrieve the directory. Passwords and other authentication details are not returned. Account invitations and approval remain managed by the project owner in Supabase.
+
+## Church classes upgrade
+
+For an existing TVM database, apply `supabase/church-classes.sql` once after the team-directory migration. It creates the three class spaces, keeps every existing record in Discipleship, preserves existing team approvals there. The project owner then approves the intended church administrator with the owner-only SQL below. Other teammates remain Discipleship members. No one is automatically added to Foundations or Ministry Empowerment.
+
+For a new installation, run the base schema and church upgrade before using the frontend. Create your first app user, then have the project owner approve the intended church administrator in the SQL Editor:
+
+```sql
+insert into public.church_admins(user_id)
+select id from auth.users where lower(email)=lower('YOUR-OWNER-EMAIL');
+```
+
+Only the Supabase project owner can edit `church_admins`. In the app, choose a class at the top, open **Team & settings**, and add an already-invited email as **Team member** or **Class leader**. Class leaders can add/remove members only in their own class; they cannot promote users or modify another leader. Removing class access does not delete the user or student records.
+
+Assignments have a **Section / topic** field. Pick Devotional, Monthly Topic, General, or type a custom name such as `October: Prayer`. Filter the assignment list by that section, or edit an existing assignment to move it into a section. Existing assignments stay in General. CSV exports include the section. No extra modules or church-wide information feed are introduced.

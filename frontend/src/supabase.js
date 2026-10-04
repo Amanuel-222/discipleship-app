@@ -34,7 +34,7 @@ export async function requireTeamAccess(){
  if(!supabase)throw new Error('Supabase is not configured for this site yet.');
  const {data,error}=await supabase.rpc('is_tvm_member');
  if(error)throw new Error('Could not verify team access. Check the database setup.');
- if(!data)throw new Error('Your account has not been approved for this TVM class. Contact your class leader.');
+ if(!data)throw new Error('Your account has not been approved for any True Vine class. Contact your class leader.');
 }
 export async function signIn(email,password){
  if(!supabase)throw new Error('Supabase is not configured for this site yet.');
