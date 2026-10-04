@@ -62,6 +62,11 @@ alter table public.attendance_records add foreign key(student_id,ministry_id) re
 alter table public.assignment_submissions add foreign key(assignment_id,ministry_id) references public.assignments(id,ministry_id) on delete cascade;
 alter table public.assignment_submissions add foreign key(student_id,ministry_id) references public.students(id,ministry_id) on delete cascade;
 alter table public.progress_notes add foreign key(student_id,ministry_id) references public.students(id,ministry_id) on delete cascade;
+-- Composite keys replace the legacy single-column relationships, avoiding
+-- ambiguous nested roster queries in PostgREST while keeping cascades intact.
+alter table public.attendance_records drop constraint attendance_records_session_id_fkey, drop constraint attendance_records_student_id_fkey;
+alter table public.assignment_submissions drop constraint assignment_submissions_assignment_id_fkey, drop constraint assignment_submissions_student_id_fkey;
+alter table public.progress_notes drop constraint progress_notes_student_id_fkey;
 create or replace function tvm_private.capture_session_roster() returns trigger
 language plpgsql security definer set search_path=''
 as $$ begin insert into public.attendance_records(session_id,student_id,ministry_id) select new.id,id,new.ministry_id from public.students where ministry_id=new.ministry_id; return new; end; $$;
