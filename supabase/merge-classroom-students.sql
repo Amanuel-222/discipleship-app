@@ -34,11 +34,11 @@ begin
   insert into public.attendance_records(session_id,student_id,status,ministry_id)
    select session_id,pair.manual_id,status,ministry_id from public.attendance_records where student_id=pair.google_id
    on conflict(session_id,student_id) do update set status=coalesce(public.attendance_records.status,excluded.status);
-  insert into public.assignment_submissions(assignment_id,student_id,submitted,ministry_id)
-   select assignment_id,pair.manual_id,submitted,ministry_id from public.assignment_submissions where student_id=pair.google_id
+  insert into public.assignment_submissions(assignment_id,student_id,submitted,late,ministry_id)
+   select assignment_id,pair.manual_id,submitted,late,ministry_id from public.assignment_submissions where student_id=pair.google_id
    on conflict(assignment_id,student_id) do update set submitted=case
     when exists(select 1 from public.assignments a where a.id=excluded.assignment_id and a.classroom_work_id is not null)
-    then excluded.submitted else public.assignment_submissions.submitted or excluded.submitted end;
+    then excluded.submitted else public.assignment_submissions.submitted or excluded.submitted end,late=case when exists(select 1 from public.assignments a where a.id=excluded.assignment_id and a.classroom_work_id is not null) then excluded.late else public.assignment_submissions.late or excluded.late end;
   update public.progress_notes set student_id=pair.manual_id where student_id=pair.google_id;
   -- Keep the original student ID/name and its history; attach Google's email/ID.
   update public.students m set email=case when m.email='' then g.email else m.email end,

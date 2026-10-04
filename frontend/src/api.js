@@ -7,7 +7,7 @@ export function readDemo(ministry){const key=demoKey(ministry);try{const x=JSON.
 const configs={
  students:{table:'students',select:'id,name,email,notes,created_at'},
  attendance:{table:'sessions',select:'id,date,created_at,records:attendance_records(student:student_id,status)'},
- assignments:{table:'assignments',select:'id,title,description,topic,due_date,created_at,classroom_work_id,classroom_url,records:assignment_submissions(student:student_id,submitted)'},
+ assignments:{table:'assignments',select:'id,title,description,topic,due_date,created_at,classroom_work_id,classroom_url,records:assignment_submissions(student:student_id,submitted,late)'},
  notes:{table:'progress_notes',select:'id,student:student_id,text,created_at'},
  meetings:{table:'team_meetings',select:'id,title,date,notes,created_at'}
 };
@@ -29,7 +29,7 @@ export async function request(resource,method='GET',body,ministry){
  }
  if(method==='PATCH'){
   if(collection==='attendance'){checked(await supabase.from('attendance_records').update({status:body.status}).eq('ministry_id',ministry).eq('session_id',rowId).eq('student_id',body.student).select('session_id').single(),collection);return null;}
-  if(collection==='assignments'&&body.student){checked(await supabase.from('assignment_submissions').update({submitted:body.submitted}).eq('ministry_id',ministry).eq('assignment_id',rowId).eq('student_id',body.student).select('assignment_id').single(),collection);return null;}
+  if(collection==='assignments'&&body.student){checked(await supabase.from('assignment_submissions').update({submitted:body.submitted,late:!!body.submitted&&!!body.late}).eq('ministry_id',ministry).eq('assignment_id',rowId).eq('student_id',body.student).select('assignment_id').single(),collection);return null;}
   if(collection==='assignments')return normalize(checked(await supabase.from(c.table).update({title:body.title.trim(),description:body.description||'',due_date:body.dueDate||null,topic:body.topic?.trim()||'General'}).eq('ministry_id',ministry).eq('id',rowId).select(c.select).single(),collection));
   if(collection==='meetings')return normalize(checked(await supabase.from(c.table).update({title:body.title.trim(),date:body.date,notes:body.notes.trim()}).eq('ministry_id',ministry).eq('id',rowId).select(c.select).single(),collection));
   return normalize(checked(await supabase.from(c.table).update({name:body.name.trim(),email:body.email?.trim()||'',notes:body.notes||''}).eq('ministry_id',ministry).eq('id',rowId).select(c.select).single(),collection));
@@ -40,7 +40,7 @@ export async function request(resource,method='GET',body,ministry){
 function demoRequest(resource,method,body,ministry){const key=demoKey(ministry);const [collection,rowId]=resource.slice(1).split('/');const db=readDemo(ministry);if(!db[collection])throw new Error('Unknown collection.');if(method==='GET')return db[collection];
 if(method==='POST'){const row={...body,_id:crypto.randomUUID(),createdAt:new Date().toISOString()};if(collection==='attendance'){if(db.attendance.some(s=>s.date===body.date))throw new Error('A session already exists on that date.');row.records=db.students.map(s=>({student:s._id,status:null}));}if(collection==='assignments')row.records=db.students.map(s=>({student:s._id,submitted:false}));db[collection].unshift(row);localStorage.setItem(key,JSON.stringify(db));return row;}
 const row=db[collection].find(s=>s._id===rowId);if(!row)throw new Error('Record not found.');
-if(method==='PATCH'){if(['attendance','assignments'].includes(collection)&&body.student){const record=row.records.find(r=>r.student===body.student);if(!record)throw new Error('Student is not on this roster.');if(collection==='attendance')record.status=body.status;else record.submitted=body.submitted;}else Object.assign(row,body);}
+if(method==='PATCH'){if(['attendance','assignments'].includes(collection)&&body.student){const record=row.records.find(r=>r.student===body.student);if(!record)throw new Error('Student is not on this roster.');if(collection==='attendance')record.status=body.status;else {record.submitted=body.submitted;record.late=!!body.submitted&&!!body.late;}}else Object.assign(row,body);}
 if(method==='DELETE'){db[collection]=db[collection].filter(r=>r._id!==rowId);if(collection==='students'){for(const c of ['attendance','assignments'])for(const item of db[c])item.records=item.records.filter(r=>r.student!==rowId);db.notes=db.notes.filter(n=>n.student!==rowId);}}
 localStorage.setItem(key,JSON.stringify(db));return row;}
 export function resetDemo(ministry){localStorage.removeItem(demoKey(ministry));readDemo(ministry);}

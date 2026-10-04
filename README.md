@@ -162,3 +162,8 @@ Apply `supabase/classroom.sql` after `supabase/church-classes.sql`. The app uses
 Class leaders use **Team & settings → Google Classroom**, authorize their teacher account, select an active course, and click **Sync Classroom**. The first sync confirms the course link; subsequent syncs reuse it. Switching the linked course requires administrator review to prevent accidental mixed rosters. This is manual sync, with no background Google access; Google may request authorization again after token expiration or reloading.
 
 The sync reads every page of students, topics, published coursework, and submissions before one atomic database import. Existing students are matched by Google identity or an unambiguous email within that class; local names, notes, and attendance remain intact. Imported assignments update by Google IDs, with Classroom's actual recipients defining completion totals. Returned work counts as submitted only if its history includes a turn-in; reclaimed work counts as not submitted. Manual assignments are unaffected. Deleted or unpublished Classroom assignments and departed students remain as local history. Imported status controls are read-only in the UI; use Classroom, then sync again.
+# Late tracking
+
+Attendance supports Present, Late, and Absent. Late attendance counts as attended. Manual assignments support Not submitted, Submitted, and Late; Late means submitted late and counts toward completion. Imported assignments use Classroom's late flag on submitted work, refreshed by Sync Classroom. Unsubmitted overdue work remains Not submitted.
+
+For an existing database, apply `supabase/late-status.sql` after the Classroom exclusions upgrade. Fresh installations use the updated `schema.sql` and `classroom.sql`.

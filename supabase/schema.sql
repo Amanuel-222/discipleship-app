@@ -71,7 +71,7 @@ create table public.sessions (
 create table public.attendance_records (
   session_id uuid not null references public.sessions(id) on delete cascade,
   student_id uuid not null references public.students(id) on delete cascade,
-  status text check (status in ('Present','Absent')),
+  status text check (status in ('Present','Late','Absent')),
   primary key (session_id,student_id)
 );
 create index attendance_student_idx on public.attendance_records(student_id);
@@ -86,6 +86,7 @@ create table public.assignment_submissions (
   assignment_id uuid not null references public.assignments(id) on delete cascade,
   student_id uuid not null references public.students(id) on delete cascade,
   submitted boolean not null default false,
+  late boolean not null default false check (not late or submitted),
   primary key (assignment_id,student_id)
 );
 create index submissions_student_idx on public.assignment_submissions(student_id);
@@ -149,7 +150,7 @@ end; $$;
 revoke insert,delete,update on public.attendance_records from authenticated;
 grant update(status) on public.attendance_records to authenticated;
 revoke insert,delete,update on public.assignment_submissions from authenticated;
-grant update(submitted) on public.assignment_submissions to authenticated;
+grant update(submitted,late) on public.assignment_submissions to authenticated;
 
 -- Optional live updates. This publication exists on Supabase projects.
 do $$ declare t text; begin

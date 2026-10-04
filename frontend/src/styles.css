@@ -16,3 +16,5 @@
 .brand{font-size:22px}.class-selector{max-width:190px;font-size:12px;padding:8px 10px}.assignment-section-filter{padding:15px 20px 0}.assignment-section-filter .field{margin-bottom:12px}.assignment-topic{font-weight:600;color:#647c50!important}.team-access-form{border-top:1px solid var(--border);margin-top:18px;padding-top:20px}.team-access-form h3{font-size:14px}@media(max-width:640px){.class-selector{max-width:165px;font-size:10px}.breadcrumb{max-width:95px;overflow:hidden;white-space:nowrap}.team-directory li{flex-wrap:wrap}.team-directory li .danger-link{margin-left:39px}}
 
 .classroom-controls{display:flex;flex-direction:column;gap:14px;margin-top:18px}.classroom-controls .primary{align-self:flex-start}.classroom-error{color:#9b322d}.classroom-controls select{max-width:100%}
+
+.segmented .late.selected,.submission.late{background:#fff2d4;color:#89651e;border-color:#e8d19d}.assignment-summary{padding:14px 23px;color:#737c6a;border-bottom:1px solid var(--border)}select.submission{cursor:pointer;max-width:160px}@media(max-width:600px){.attendance-row{flex-wrap:wrap}.attendance-controls{margin-left:auto}.assignment-summary{padding:14px 18px}}

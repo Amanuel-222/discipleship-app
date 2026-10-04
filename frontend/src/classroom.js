@@ -52,7 +52,7 @@ export async function fetchClassroomSnapshot(token,course){
    const due=work.dueDate;
    return {id:work.id,title:work.title,description:work.description||'',topic:topics.find(t=>t.topicId===work.topicId)?.name||'General',url:work.alternateLink,
     dueDate:due?`${due.year}-${String(due.month).padStart(2,'0')}-${String(due.day).padStart(2,'0')}`:'',
-    submissions:submissions.map(s=>({userId:s.userId,submitted:wasSubmitted(s)}))};
+    submissions:submissions.map(s=>({userId:s.userId,submitted:wasSubmitted(s),late:wasSubmitted(s)&&s.late===true}))};
   }));assignments.push(...batch);
  }
  return {courseId:course.id,courseName:course.name,students:students.map(s=>({id:s.userId,name:s.profile?.name?.fullName||'Classroom student',email:s.profile?.emailAddress||''})),assignments};

@@ -1,34 +1,11 @@
--- Apply after church-classes.sql. No Google credentials are stored here.
+-- Existing project upgrade; apply after classroom-exclusions.sql.
 begin;
--- Owner-reviewed exclusions prevent removed duplicate Google accounts returning.
-create table tvm_private.classroom_student_exclusions (
- ministry_id uuid not null references public.ministries(id) on delete cascade,
- course_id text not null,
- user_id text not null,
- primary key(ministry_id,course_id,user_id)
-);
-alter table tvm_private.classroom_student_exclusions enable row level security;
-revoke all on tvm_private.classroom_student_exclusions from public,anon,authenticated;
-create table public.classroom_links (
- ministry_id uuid primary key references public.ministries(id) on delete cascade,
- course_id text not null check(length(course_id) between 1 and 100),
- course_name text not null check(length(course_name) between 1 and 200),
- last_synced_at timestamptz
-);
-alter table public.classroom_links enable row level security;
-revoke all on public.classroom_links from public,anon,authenticated;
-grant select on public.classroom_links to authenticated;
-create policy "Classroom link visibility" on public.classroom_links for select to authenticated using ((select tvm_private.can_access_ministry(ministry_id)));
-alter table public.students add classroom_course_id text, add classroom_user_id text;
-create unique index students_classroom_identity on public.students(ministry_id,classroom_course_id,classroom_user_id);
-alter table public.assignments add classroom_course_id text, add classroom_work_id text, add classroom_url text;
-create unique index assignments_classroom_identity on public.assignments(ministry_id,classroom_course_id,classroom_work_id);
--- Ordinary app writes cannot fabricate Google source identifiers.
-revoke insert on public.students,public.assignments from authenticated;
-grant insert(id,name,email,notes,created_at,ministry_id) on public.students to authenticated;
-grant insert(id,title,description,due_date,created_at,ministry_id,topic) on public.assignments to authenticated;
--- Only the guarded import can edit source identifiers or rebuild imported rosters.
-create function tvm_private.sync_classroom(target uuid,payload jsonb) returns jsonb
+alter table public.attendance_records drop constraint attendance_records_status_check;
+alter table public.attendance_records add constraint attendance_records_status_check check(status in ('Present','Late','Absent'));
+alter table public.assignment_submissions add column late boolean not null default false;
+alter table public.assignment_submissions add constraint assignment_submissions_late_check check(not late or submitted);
+grant update(late) on public.assignment_submissions to authenticated;
+create or replace function tvm_private.sync_classroom(target uuid,payload jsonb) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare course text; person jsonb; work jsonb; submission jsonb; sid uuid; aid uuid; candidates integer; student_count integer:=0; assignment_count integer:=0; previous_course text;
 begin
@@ -81,8 +58,4 @@ begin
  on conflict(ministry_id) do update set course_name=excluded.course_name,last_synced_at=excluded.last_synced_at;
  return jsonb_build_object('students',student_count,'assignments',assignment_count);
 end $$;
-create function public.sync_classroom(ministry uuid,payload jsonb) returns jsonb
-language sql security invoker set search_path='' as $$ select tvm_private.sync_classroom(ministry,payload); $$;
-revoke all on function tvm_private.sync_classroom(uuid,jsonb),public.sync_classroom(uuid,jsonb) from public,anon;
-grant execute on function tvm_private.sync_classroom(uuid,jsonb),public.sync_classroom(uuid,jsonb) to authenticated;
 commit;
