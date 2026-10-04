@@ -16,7 +16,7 @@ test('Classroom reads every page and rejects denied access',async()=>{
   globalThis.fetch=async url=>{urls.push(url);return {ok:true,json:async()=>urls.length===1?{students:[{userId:'1'}],nextPageToken:'next'}:{students:[{userId:'2'}]}};};
   assert.deepEqual(await listClassroom('test','courses/123/students','students'),[{userId:'1'},{userId:'2'}]);
   assert.equal(urls[1].searchParams.get('pageToken'),'next');
-  globalThis.fetch=async()=>({ok:false,status:403});
-  await assert.rejects(listClassroom('test','courses','courses'),/Google denied access/);
+  globalThis.fetch=async()=>({ok:false,status:403,json:async()=>({error:{message:'Request had insufficient authentication scopes.'}})});
+  await assert.rejects(listClassroom('test','courses/123/courseWork/456/studentSubmissions','studentSubmissions'),/Google denied access to the student submissions\. Request had insufficient authentication scopes\. No changes were saved\./);
  }finally{globalThis.fetch=original;}
 });

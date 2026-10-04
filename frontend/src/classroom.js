@@ -19,7 +19,15 @@ export async function listClassroom(token,path,key,params={}){
   const url=new URL('https://classroom.googleapis.com/v1/'+path);
   for(const [key,value] of Object.entries({...params,pageSize:100,...(pageToken?{pageToken}:{})}))url.searchParams.set(key,value);
   const response=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(30000)});
-  if(!response.ok){if(response.status===401)throw new Error('Google access expired. Connect Google Classroom again.');if(response.status===403)throw new Error('Google denied access. Use a teacher account and allow all five Classroom permissions.');throw new Error('Classroom could not load. No changes were saved. Try again.');}
+  if(!response.ok){
+   if(response.status===401)throw new Error('Google access expired. Connect Google Classroom again.');
+   if(response.status===403){
+    const detail=await response.json().catch(()=>({}));
+    const resource=path.includes('/studentSubmissions')?'student submissions':path.includes('/courseWork')?'assignments':path.includes('/students')?'student roster':path.includes('/topics')?'topics':'course list';
+    throw new Error(`Google denied access to the ${resource}. ${detail.error?.message||'Use a teacher account and approve the requested Classroom permissions.'} No changes were saved.`);
+   }
+   throw new Error('Classroom could not load. No changes were saved. Try again.');
+  }
   const data=await response.json();rows.push(...(data[key]||[]));pageToken=data.nextPageToken;
  }while(pageToken);
  return rows;

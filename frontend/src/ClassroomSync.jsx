@@ -15,7 +15,8 @@ export default function ClassroomSync({ministry,demo,onSynced,onBusy}){
     callback:async response=>{
      if(!alive.current)return;
      if(response.error||!response.access_token){setError('Google authorization was not completed. Try connecting again.');working(false);return;}
-     if(!google.hasGrantedAllScopes(response,...classroomScopes)){setError('Allow all five Classroom permissions, then connect again.');working(false);return;}
+     // Google enforces permissions on each API request. Do not reject a
+     // usable token solely because its returned scope names differ.
      token.current=response.access_token;
      try{const rows=await listClassroom(token.current,'courses','courses',{teacherId:'me',courseStates:'ACTIVE'});if(alive.current){setCourses(rows);setMessage(rows.length?'Choose the course for '+ministry.name+'.':'No active classes found. Use an account listed as a teacher in Classroom.');}}
      catch(e){if(alive.current)setError(e.message);}finally{working(false);}
@@ -24,7 +25,7 @@ export default function ClassroomSync({ministry,demo,onSynced,onBusy}){
   }).catch(e=>alive.current&&setError(e.message));
   return()=>{alive.current=false;token.current=null;client.current=null;onBusy?.(false);};
  },[ministry.id,demo,canSync]);
- function connect(){setError('');setMessage('');working(true);client.current.requestAccessToken({prompt:'select_account'});}
+ function connect(){setError('');setMessage('');working(true);client.current.requestAccessToken({prompt:'consent select_account'});}
  async function sync(){
   const course=courses.find(c=>c.id===courseId);if(!course||!token.current)return;
   if(!link&&!window.confirm(`Link ${ministry.name} to “${course.name}” and import its students and published assignments? Existing students with matching emails will be linked.`))return;
