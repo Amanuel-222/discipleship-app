@@ -7,7 +7,7 @@ export function readDemo(ministry){const key=demoKey(ministry);try{const x=JSON.
 const configs={
  students:{table:'students',select:'id,name,email,notes,created_at'},
  attendance:{table:'sessions',select:'id,date,created_at,records:attendance_records(student:student_id,status)'},
- assignments:{table:'assignments',select:'id,title,description,topic,due_date,created_at,records:assignment_submissions(student:student_id,submitted)'},
+ assignments:{table:'assignments',select:'id,title,description,topic,due_date,created_at,classroom_work_id,classroom_url,records:assignment_submissions(student:student_id,submitted)'},
  notes:{table:'progress_notes',select:'id,student:student_id,text,created_at'},
  meetings:{table:'team_meetings',select:'id,title,date,notes,created_at'}
 };
