@@ -133,3 +133,9 @@ New projects use `supabase/schema.sql`, which includes meeting notes. To upgrade
 Keep the default invite/recovery templates' `{{ .ConfirmationURL }}` links, which verify the email before returning to this app. No service-role key or admin invitation API is exposed in the browser. Invitations are sent by the project owner through Supabase, not by ordinary class members.
 
 Reference: https://supabase.com/docs/guides/auth/auth-smtp
+
+## Team directory
+
+Open **Team & settings** (on mobile, tap **TV** in the top-right corner) to see the **Team members** directory. It lists approved teammates' email addresses and approval dates, marks your own account, and refreshes on demand or when you return to the app. Invited accounts appear after class-access approval, even before their first sign-in.
+
+For an existing database, apply `supabase/team-directory.sql` once before deploying this update. New projects use the full schema. A caller-checked private function returns only email, user ID, and approval date; anonymous and unapproved accounts cannot retrieve the directory. Passwords and other authentication details are not returned. Account invitations and approval remain managed by the project owner in Supabase.

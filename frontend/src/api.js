@@ -42,3 +42,15 @@ if(method==='PATCH'){if(['attendance','assignments'].includes(collection)){const
 if(method==='DELETE'){db[collection]=db[collection].filter(r=>r._id!==rowId);if(collection==='students'){for(const c of ['attendance','assignments'])for(const item of db[c])item.records=item.records.filter(r=>r.student!==rowId);db.notes=db.notes.filter(n=>n.student!==rowId);}}
 localStorage.setItem(key,JSON.stringify(db));return row;}
 export function resetDemo(){localStorage.setItem(key,JSON.stringify(sampleData()));}
+
+// A guarded RPC returns approved teammates, without exposing auth.users to clients.
+export async function readTeamDirectory(){
+ if(isDemo())return [
+  {user_id:'demo-leader',email:'leader@example.com',approved_at:'2026-09-01T12:00:00Z'},
+  {user_id:'demo-helper',email:'helper@example.com',approved_at:'2026-09-08T12:00:00Z'}
+ ];
+ if(!supabase)throw new Error('Supabase is not configured for this site yet.');
+ const {data,error}=await supabase.rpc('team_directory');
+ if(error)throw new Error(error.code==='42501'?'Only approved TVM teammates can view this directory.':'Could not load team members. Try Refresh.');
+ return data||[];
+}
