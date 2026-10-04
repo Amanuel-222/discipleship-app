@@ -5,7 +5,7 @@ function Field({label,...props}){
  return <label className="field">{label}<input {...props}/></label>;
 }
 function AuthCard({title,description,children}){
- return <div className="login-page"><section className="login-card"><span className="eyebrow">TRUE VINE MINISTRY</span><h1>{title}</h1><p>{description}</p>{children}<small className="login-foot">Rooted in truth. Growing together.</small></section></div>;
+ return <div className="login-page"><section className="login-card"><span className="eyebrow">TVM HUB</span><h1>{title}</h1><p>{description}</p>{children}<small className="login-foot">Rooted in truth. Growing together.</small></section></div>;
 }
 export function Login({onLogin,initialError='',notice=''}){
  const [reset,setReset]=useState(false);

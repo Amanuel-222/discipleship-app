@@ -1,4 +1,4 @@
-# True Vine Classes — React + Supabase
+# TVM Hub — React + Supabase
 
 A simple student tracker for Discipleship, Foundations, and Ministry Empowerment: student profiles, weekly attendance, assignment submission statuses, dated progress notes, dashboard metrics, and CSV exports.
 
