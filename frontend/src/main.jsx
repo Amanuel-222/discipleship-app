@@ -29,7 +29,7 @@ function open(m){setFormError('');setModal(m);}
 const go=r=>{location.hash=r;};const page=route.startsWith('student/')?'students':paths[route]?route:'dashboard';const selectedStudent=route.startsWith('student/')?data.students.find(s=>s._id===route.split('/')[1]):null;
 const filtered=data.students.filter(s=>(s.name+' '+s.email).toLowerCase().includes(query.toLowerCase()));
 const nameOf=id=>data.students.find(s=>s._id===id)?.name||'Removed student';
-const topics=[...new Set(['Devotional','Monthly Topic','General',...data.assignments.map(a=>a.topic||'General')])];const visibleAssignments=data.assignments.filter(a=>!topicFilter||(a.topic||'General')===topicFilter);
+const topics=[...new Set(['Devotional','Core Christian Doctrine','Spiritual Formation','Church and Church History','Character of a True Disciple','Monthly Topic','General',...data.assignments.map(a=>a.topic||'General')])];const visibleAssignments=data.assignments.filter(a=>!topicFilter||(a.topic||'General')===topicFilter);
 const session=data.attendance.find(a=>a._id===selectedSession)||data.attendance[0];const assignment=visibleAssignments.find(a=>a._id===selectedAssignment)||visibleAssignments[0];
 const marked=data.attendance.flatMap(a=>a.records).filter(r=>r.status);const attendanceRate=marked.length?Math.round(marked.filter(r=>r.status==='Present').length/marked.length*100):null;
 const submissions=data.assignments.flatMap(a=>a.records);const completionRate=submissions.length?Math.round(submissions.filter(r=>r.submitted).length/submissions.length*100):null;
