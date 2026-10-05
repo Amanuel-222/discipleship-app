@@ -20,3 +20,9 @@
 .segmented .late.selected,.submission.late{background:#fff2d4;color:#89651e;border-color:#e8d19d}.assignment-summary{padding:14px 23px;color:#737c6a;border-bottom:1px solid var(--border)}select.submission{cursor:pointer;max-width:160px}@media(max-width:600px){.attendance-row{flex-wrap:wrap}.attendance-controls{margin-left:auto}.assignment-summary{padding:14px 18px}}
 
 .attendance-status{border:1px solid var(--border);border-radius:6px;padding:9px;max-width:215px;background:#fafbf7}.attendance-status.present{background:#eef5e6;color:#506646}.attendance-status.late{background:#fff2d4;color:#89651e}.attendance-status.excused,.badge.excused{background:#e8f0fa;color:#48657e}.attendance-status.unexcused,.badge.unexcused{background:#f7e8e5;color:#9a5149}@media(max-width:600px){.attendance-status{max-width:190px;font-size:12px}}
+
+.classroom-sync-status{font-size:13px;color:#737c6a;margin:-10px 0 20px;line-height:1.6}
+.assignment-roster-filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+.assignment-roster-filters .field{margin:0;min-width:160px}
+.assignment-roster-filters select{padding:9px;font-size:13px}
+@media(max-width:600px){.assignment-roster-filters{width:100%}.assignment-roster-filters .search{max-width:100%}.assignment-roster-filters .field{width:100%}}
