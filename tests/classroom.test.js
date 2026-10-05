@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {wasSubmitted,listClassroom} from '../frontend/src/classroom.js';
 import {assignmentStatus} from '../frontend/src/metrics.js';
-test('Late is a completed submission, while overdue unsubmitted work stays missing',()=>{
- assert.equal(assignmentStatus({submitted:true,late:true}),'Late');
+test('Assignments have two statuses regardless of Classroom lateness',()=>{
+ assert.equal(assignmentStatus({submitted:true,late:true}),'Submitted');
  assert.equal(assignmentStatus({submitted:true,late:false}),'Submitted');
  assert.equal(assignmentStatus({submitted:false,late:true}),'Not submitted');
 });
