@@ -11,7 +11,7 @@ The TVM app is deployed at https://tvm-discipleship.onrender.com/ from the `tvm-
 ## Owner setup
 
 1. Use a **new, dedicated Supabase project** on the Free plan. The schema uses common table names and is intended for a new project, not an unrelated existing app.
-2. Run `supabase/schema.sql`, then `supabase/church-classes.sql` in that project's SQL Editor. It creates the tables, roster triggers, and approved-team policies. The SQL is transactional and will fail if these tables already exist; do not rerun it against an existing class without reviewing a migration.
+2. Run `supabase/schema.sql`, then `supabase/church-classes.sql` and `supabase/team-calendar.sql` in that project's SQL Editor. It creates the tables, roster triggers, and approved-team policies. The SQL is transactional and will fail if these tables already exist; do not rerun it against an existing class without reviewing a migration.
 3. In Authentication settings, enable email/password sign-in and disable public sign-up.
 4. Create your own application user under Authentication → Users using the email/password you want to use in the TVM app. Your Supabase dashboard account is separate and is not automatically an application user.
 5. Run `supabase/approve-member.sql`, replacing both example-email occurrences with that user's exact email. Verify the result shows the approved email. This sends no invitation email.
@@ -169,3 +169,7 @@ Attendance supports Present, Late, and Absent. Late attendance counts as attende
 For an existing database, apply `supabase/late-status.sql` after the Classroom exclusions upgrade. Fresh installations use the updated `schema.sql` and `classroom.sql`.
 
 Attendance also distinguishes E (Excused absence) from U (Unexcused absence), including student histories and CSV exports. Excused absences are excluded from attendance percentages. Legacy Absent records retain an unknown reason until clarified. Existing projects apply `supabase/absence-reasons.sql` after `late-status.sql`.
+
+## Calendar & meetings
+
+Apply `supabase/team-calendar.sql` once after the church classes migration for existing and fresh projects. Existing meetings and notes remain intact; a new event can be saved before notes are available. The shared class calendar has Month and Agenda views, team meeting/fellowship types, optional start/end times and locations, and an editable meeting notes journal. Times are entered and displayed in Eastern time; blank times mean all day. Events cover one date, with an optional end time later that day. Access uses the same class membership policies as other class records. This is the app’s own shared calendar, with no external Google/Apple calendar synchronization.
